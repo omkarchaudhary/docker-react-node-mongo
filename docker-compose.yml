@@ -1,0 +1,55 @@
+version: "3.8"
+services:
+  mongodb:
+    image: 'mongo'
+    volumes:
+      - data:/data/db
+    # we can use environment or env_file to read value
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=max
+    #   - MONGO_INITDB_ROOT_PASSWORD=secret
+    # We can use env file too
+    env_file:
+      - ./env/mongo.env
+    # We can use network also like this
+    # networks:
+    #   - goals-net
+  backend:
+    #to build image from the DockerFile inthe given path
+    build: ./backend
+    # building in different way
+    # build:  
+    #   context: ./backend
+    #   dockerfile: DockerFile
+    #   args:
+    #     - someArgs=value
+    ports:
+      - '80:80'
+    volumes:
+    # Named volumes
+      - logs:/app/logs
+    # Bind mount voume
+      - ./backend:/app
+    # Anonymous volume
+      - /app/node_modules
+    env_file:
+      - ./env/backend.env
+    # Add dependencies
+    depends_on:
+      - mongodb
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend/src:/app/src
+    # In interactive mode for UI apps
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+#named volume
+volumes:
+  data:
+  logs:
+  
